@@ -18,7 +18,7 @@ input_str = '''exit. To Exit
 '''
 
 
-def get_data(query: str, cur) -> list:
+def execute_query(query: str, cur) -> list:
     try:
         cur.execute(query)
         return cur.fetchall()
@@ -69,13 +69,13 @@ with con:
 
         elif inp == "1":
             query = "INSERT INTO student (student_id,student_name, student_email) VALUES (2018102038, 'Tanmay Khabia', 'tanmay.khabia@students.iiit.ac.in')"
-            cur.execute(query)
+            result = execute_query(query, cur)
             con.commit()
 
         elif inp == "2":
             query = "SELECT * FROM student"
 
-            result = get_data(query=query, cur=cur)
+            result = execute_query(query=query, cur=cur)
             for i in result:
                 #print("Name:", i[1], "Roll Number:", i[0], "Email ID:", i[2])
                 print(i)
@@ -91,7 +91,7 @@ with con:
                         ON 
                             prof.prof_id=course.prof_id'''
 
-            result = get_data(query, cur)
+            result = execute_query(query, cur)
             for i in result:
                 print(i)
             con.commit()
@@ -110,7 +110,7 @@ with con:
                         student_id = {inp2}
                       '''
 
-            result = get_data(query, cur)
+            result = execute_query(query, cur)
             for i in result:
                 print(i)
             con.commit()
@@ -133,7 +133,7 @@ with con:
                         as_type = '{inp3}'
                       '''
 
-            result = get_data(query, cur)
+            result = execute_query(query, cur)
             for i in result:
                 print(i)
             con.commit()
@@ -153,7 +153,7 @@ with con:
 
             query2 = f"SELECT course_cap FROM course WHERE course_id = '{inp3}'"
 
-            result = get_data(query2, cur)
+            result = execute_query(query2, cur)
             course_capacity = result[0][0]
             con.commit()
 
@@ -161,6 +161,7 @@ with con:
                 if(is_valid(inp2, inp3, inp4)):
                     query3 = f"INSERT INTO cr_approved  VALUES ({inp2},'{inp3}', '{inp4}')"
                     cur.execute(query3)
+                    print("Course approved successfully")
                     con.commit()
                 else:
                     print('PENDING1')

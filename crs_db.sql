@@ -30,7 +30,7 @@ CREATE TABLE course(
     is_science_type INT,
     is_hum_type INT,
     prof_id VARCHAR(50) NOT NULL,
-    FOREIGN KEY (prof_id) REFERENCES prof (prof_id)
+    FOREIGN KEY (prof_id) REFERENCES prof (prof_id) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS cr_approved;
@@ -40,8 +40,8 @@ CREATE TABLE cr_approved(
   course_id VARCHAR (50) NOT NULL,
   as_type VARCHAR (20),
   PRIMARY KEY (student_id, course_id),
-  FOREIGN KEY (student_id) REFERENCES student (student_id),
-  FOREIGN KEY (course_id) REFERENCES course (course_id)
+  FOREIGN KEY (student_id) REFERENCES student (student_id) ON DELETE CASCADE,
+  FOREIGN KEY (course_id) REFERENCES course (course_id) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS all_course_data;
@@ -51,6 +51,6 @@ CREATE TABLE all_course_data(
     course_id VARCHAR (50) NOT NULL,
     as_type VARCHAR (20),
     PRIMARY KEY (student_id, course_id),
-    FOREIGN KEY (student_id) REFERENCES student (student_id),
-    FOREIGN KEY (course_id) REFERENCES course (course_id)
+    FOREIGN KEY (student_id) REFERENCES student (student_id) ON DELETE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES course (course_id) ON DELETE CASCADE
 ); 
