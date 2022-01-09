@@ -12,9 +12,49 @@ input_str = '''exit. To Exit
 1. Inserting a Student 
 2. Show all students details
 3. Show all courses 
-4. Show all courses done till now
-5. Show all courses of a Particular Type
+4. Show all courses done till now(For a Student)
+5. Show all courses of a Particular Type(For a Student)
+6. Approving a course for a student
 '''
+
+
+def get_data(query: str, cur) -> list:
+    try:
+        cur.execute(query)
+        return cur.fetchall()
+    except Exception as e:
+        con.rollback()
+        print(e)
+        print("Unable to execute the following query")
+        print(query)
+        return []
+
+
+def is_valid(student_id, course_id, course_type):
+    query = "SELECT COUNT(*) FROM all_course_data WHERE student_id = %(bigint)s AND course_id = %(str)s"
+    cur.execute(query, {'bigint': student_id, 'str': course_id})
+    result = cur.fetchall()
+    con.commit()
+    print(result[0][0])
+    if result[0][0] == 0:
+        query = "SELECT COUNT(*) FROM all_course_data WHERE student_id = %(bigint)s AND as_type = %(str)s"
+        cur.execute(query, {'bigint': student_id,
+                    'str': course_id, 'str': course_type})
+        result = cur.fetchall()
+        con.commit()
+        if(course_type == "Humanities" and result[0][0] < 3):
+            return True
+        elif(course_type == "Maths" and result[0][0] < 2):
+            return True
+        elif(course_type == "Open" and result[0][0] < 5):
+            return True
+        elif(course_type == 'Science' and result[0][0] < 2):
+            return True
+        else:
+            return False
+    else:
+        return False
+
 
 with con:
     while(1):
@@ -34,8 +74,8 @@ with con:
 
         elif inp == "2":
             query = "SELECT * FROM student"
-            cur.execute(query)
-            result = cur.fetchall()
+
+            result = get_data(query=query, cur=cur)
             for i in result:
                 #print("Name:", i[1], "Roll Number:", i[0], "Email ID:", i[2])
                 print(i)
@@ -50,15 +90,15 @@ with con:
                             course 
                         ON 
                             prof.prof_id=course.prof_id'''
-            cur.execute(query)
-            result = cur.fetchall()
+
+            result = get_data(query, cur)
             for i in result:
                 print(i)
             con.commit()
 
         elif inp == "4":
             inp2 = int(input("Give Student ID: "))
-            query = '''SELECT 
+            query = f'''SELECT 
                       all_course_data.*, course.course_name 
                       FROM 
                         course
@@ -67,10 +107,10 @@ with con:
                       ON
                         course.course_id = all_course_data.course_id  
                       WHERE
-                        student_id = '%(bigint)s'
+                        student_id = {inp2}
                       '''
-            cur.execute(query, {'bigint': inp2})
-            result = cur.fetchall()
+
+            result = get_data(query, cur)
             for i in result:
                 print(i)
             con.commit()
@@ -79,7 +119,7 @@ with con:
             inp2 = int(input("Please enter Student ID: "))
             inp3 = input("Please enter Course Type: ")
             print(type(inp3))
-            query = '''SELECT 
+            query = f'''SELECT 
                       all_course_data.*, course.course_name 
                       FROM 
                         course
@@ -88,12 +128,41 @@ with con:
                       ON
                         course.course_id = all_course_data.course_id  
                       WHERE
-                        student_id = '%(bigint)s'
+                        student_id = {inp2}
                       AND
-                        as_type = %(str)s
+                        as_type = '{inp3}'
                       '''
-            cur.execute(query, {'bigint': inp2, 'str': inp3})
-            result = cur.fetchall()
+
+            result = get_data(query, cur)
             for i in result:
                 print(i)
             con.commit()
+
+        elif inp == "6":
+            inp2 = int(input("Please enter Student ID: "))
+            inp3 = (input("Enter course_id: "))
+            inp4 = input("Please enter Course Type: ")
+            query = '''SELECT 
+                       COUNT(*) FROM cr_approved 
+                       WHERE 
+                       course_id = %(str)s'''
+            cur.execute(query, {'str': inp3})
+            result = cur.fetchall()
+            curr_students = result[0][0]
+            con.commit()
+
+            query2 = f"SELECT course_cap FROM course WHERE course_id = '{inp3}'"
+
+            result = get_data(query2, cur)
+            course_capacity = result[0][0]
+            con.commit()
+
+            if curr_students < course_capacity:
+                if(is_valid(inp2, inp3, inp4)):
+                    query3 = f"INSERT INTO cr_approved  VALUES ({inp2},'{inp3}', '{inp4}')"
+                    cur.execute(query3)
+                    con.commit()
+                else:
+                    print('PENDING1')
+            else:
+                print('PENDING2')
